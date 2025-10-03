@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chatbot</title>
+  <style>
+    /* Page gradient background */
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+    }
+
+    /* Chat box container */
+    .chat-box {
+      width: 400px;
+      max-width: 90%;
+      height: 600px;
+      background: #f7f7f7;
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+
+    /* Messages area */
+    #messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #e5e5e5;
+    }
+
+    /* User and Bot messages */
+    .message {
+      max-width: 80%;
+      padding: 10px 15px;
+      border-radius: 15px;
+      word-wrap: break-word;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .user {
+      align-self: flex-end;
+      background: #2575fc;
+      color: white;
+      border-bottom-right-radius: 0;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: #f1f1f1;
+      color: #333;
+      border-bottom-left-radius: 0;
+    }
+
+    /* Input area */
+    .input-area {
+      display: flex;
+      border-top: 1px solid #ddd;
+      background: #f7f7f7;
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 12px 15px;
+      border: none;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .input-area button {
+      background: #6a11cb;
+      color: white;
+      border: none;
+      padding: 0 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .input-area button:hover {
+      background: #2575fc;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-box">
+    <div id="messages"></div>
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Type a message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    async function sendMessage() {
+      const inputField = document.getElementById("userInput");
+      const messagesDiv = document.getElementById("messages");
+      const userText = inputField.value.trim();
+      if (!userText) return;
+
+      // Show user message
+      const userMsg = document.createElement("div");
+      userMsg.className = "message user";
+      userMsg.textContent = userText;
+      messagesDiv.appendChild(userMsg);
+
+      inputField.value = "";
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+      // Show bot typing
+      const botMsg = document.createElement("div");
+      botMsg.className = "message bot";
+      botMsg.textContent = "Typing...";
+      messagesDiv.appendChild(botMsg);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+      try {
+        const response = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: userText })
+        });
+        const data = await response.json();
+        botMsg.textContent = data.reply || "Sorry, I didn't understand.";
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      } catch (err) {
+        botMsg.textContent = "Error contacting server.";
+      }
+    }
+
+    document.getElementById("userInput").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") sendMessage();
+    });
+  </script>
+</body>
+</html>
